@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Total Wealth & Purchasing Power Calculator</title>
-  <meta name="description" content="A powerful wealth calculator for Indian investors combining SIP, step-up SIP, lumpsum investment and gold/silver CAGR with inflation adjustment. Calculate future wealth, real value after inflation, and compare scenarios at 12%, 13%, 15% expected returns. Ideal for mutual fund investors and long-term planners.">
+  <meta name="description"
+    content="A powerful wealth calculator for Indian investors combining SIP, step-up SIP, lumpsum investment and gold/silver CAGR with inflation adjustment. Calculate future wealth, real value after inflation, and compare scenarios at 12%, 13%, 15% expected returns. Ideal for mutual fund investors and long-term planners.">
 
   <style>
     body {
@@ -147,6 +148,12 @@
       color: #c62828;
       font-size: 14px;
     }
+
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 10px 0;
+    }
   </style>
 </head>
 
@@ -189,12 +196,12 @@
   </div>
 
   <script>
-    // Future value of a lumpsum with annual compounding
+    // Future value of a lumpsum with annual compounding (equity portion)
     function fvLumpsum(P, annualRate, years) {
       return P * Math.pow(1 + annualRate, years);
     }
 
-    // Future value of SIP with annual step-up and monthly compounding
+    // Future value of SIP with annual step-up and monthly compounding (equity portion)
     function fvSIP(monthly, stepUpRate, years, annualRate) {
       let months = years * 12;
       if (months <= 0) return 0;
@@ -241,7 +248,7 @@
         return;
       }
 
-      if (L < 0 || G < 0 || S < 0 || stepUpPercent < 0) {
+      if (L < 0 || G < 0 || S < 0) {
         errorDiv.textContent = "Please enter non-negative values only.";
         return;
       }
@@ -261,7 +268,8 @@
         { rate: 0.15, name: "Optimistic", tag: "Strong Market (Best Case)" }
       ];
 
-      let moderateResult = 0;
+      let moderateEquityTotal = 0;
+      let moderateTotalWealth = 0;
 
       // Calculate total wealth for each scenario
       scenarios.forEach(s => {
@@ -269,35 +277,60 @@
         let fvS = fvSIP(S, stepUp, T, s.rate);
         let equityTotal = fvL + fvS;
         let totalWealth = equityTotal + fvGold;
+
         s.fvLumpsum = fvL;
         s.fvSip = fvS;
         s.equityTotal = equityTotal;
         s.totalWealth = totalWealth;
 
         if (s.rate === 0.13) {
-          moderateResult = totalWealth;
+          moderateEquityTotal = equityTotal;
+          moderateTotalWealth = totalWealth;
         }
       });
 
-      // MAIN 13% BLOCK
+      // MAIN 13% BLOCK with clear breakup
       let mainHTML = `
-        <h2>🔮 Your Estimated Future Wealth (Moderate Scenario – 13%)</h2>
+        <h2>🔮 Your Future Wealth Breakdown (Moderate Scenario – 13%)</h2>
         <div class="result-box">
-          <h2>₹ ${moderateResult.toLocaleString()}</h2>
-          <p>Approx: <strong>${toIndianShort(moderateResult)}</strong> in future value.</p>
-          <p>This is your projected total wealth (lumpsum + SIP + gold/silver) if the market delivers 13% annual returns on the equity portion.</p>
+          <h3>1️⃣ Equity Wealth (Lumpsum + SIP @ 13%)</h3>
+          <p><strong>Future Equity Value:</strong> ₹ ${moderateEquityTotal.toLocaleString()}</p>
+          <p>Approx: <strong>${toIndianShort(moderateEquityTotal)}</strong></p>
+          <hr>
+          <h3>2️⃣ Gold & Silver Wealth (@ 8% CAGR)</h3>
+          <p><strong>Future Gold & Silver Value:</strong> ₹ ${fvGold.toLocaleString()}</p>
+          <p>Approx: <strong>${toIndianShort(fvGold)}</strong></p>
+          <hr>
+          <h3>3️⃣ Total Future Wealth (Equity + Gold/Silver)</h3>
+          <p><strong>Total Future Value:</strong> ₹ ${moderateTotalWealth.toLocaleString()}</p>
+          <p>Approx: <strong>${toIndianShort(moderateTotalWealth)}</strong></p>
+          <p style="margin-top:8px; font-size: 0.9em;">
+            Equity portion (lumpsum + SIP) is grown at <strong>13% per year</strong>, while the gold & silver portion is grown at
+            <strong>8% CAGR</strong>. The total is a combination of both.
+          </p>
         </div>
       `;
 
-      // SCENARIO GRID
+      // SCENARIO GRID – explicitly mentioning equity + gold logic
       let scenarioHTML = `<h2>📊 Scenario Comparison</h2><div class="scenario-grid">`;
 
       scenarios.forEach(s => {
         scenarioHTML += `
           <div class="scenario-card">
             <h3>${s.name} — ${(s.rate * 100).toFixed(0)}%</h3>
-            <p><strong>Projected Wealth:</strong><br>₹ ${s.totalWealth.toLocaleString()}</p>
-            <p>Approx: <strong>${toIndianShort(s.totalWealth)}</strong></p>
+            <p><strong>Future Equity (Lumpsum + SIP @ ${(s.rate * 100).toFixed(0)}%):</strong><br>
+              ₹ ${s.equityTotal.toLocaleString()}<br>
+              <span style="font-size: 0.9em;">Approx: ${toIndianShort(s.equityTotal)}</span>
+            </p>
+            <p><strong>Future Gold & Silver (@ 8% CAGR):</strong><br>
+              ₹ ${fvGold.toLocaleString()}<br>
+              <span style="font-size: 0.9em;">Approx: ${toIndianShort(fvGold)}</span>
+            </p>
+            <hr>
+            <p><strong>Total Future Wealth:</strong><br>
+              ₹ ${s.totalWealth.toLocaleString()}<br>
+              <span style="font-size: 0.9em;">Approx: ${toIndianShort(s.totalWealth)}</span>
+            </p>
             <p><em>${s.tag}</em></p>
           </div>
         `;
@@ -305,10 +338,10 @@
 
       scenarioHTML += `</div>`;
 
-      // GOLD & SILVER BLOCK
+      // GOLD & SILVER BLOCK (separate explanation)
       let goldHTML = `
         <div class="gold-block">
-          <h3>🪙 Your Gold & Silver Wealth</h3>
+          <h3>🪙 Your Gold & Silver Wealth (Assumed @ 8% CAGR)</h3>
           <p>Your gold + silver worth <strong>₹ ${G.toLocaleString()}</strong> today
           may grow to around <strong>₹ ${fvGold.toLocaleString()}</strong> 
           (approx <strong>${toIndianShort(fvGold)}</strong>) over ${T} years.</p>
@@ -321,31 +354,27 @@
         </div>
       `;
 
-      // INFLATION-ADJUSTED BLOCK (13% scenario)
-      let realValue = moderateResult / inflationFactor;
+      // INFLATION-ADJUSTED BLOCK (total wealth in 13% scenario)
+      let realValue = moderateTotalWealth / inflationFactor;
       let inflationHTML = `
         <div class="highlight">
           <h3>⚠️ Inflation-Adjusted Purchasing Power</h3>
-          <p>Your future wealth of <strong>₹ ${moderateResult.toLocaleString()}</strong> 
-          (approx <strong>${toIndianShort(moderateResult)}</strong>) 
+          <p>Your total future wealth of <strong>₹ ${moderateTotalWealth.toLocaleString()}</strong> 
+          (approx <strong>${toIndianShort(moderateTotalWealth)}</strong>) 
           will feel like about <strong>₹ ${realValue.toLocaleString()}</strong> 
           in today’s money (approx <strong>${toIndianShort(realValue)}</strong>), 
           assuming <strong>7% annual inflation</strong>.</p>
         </div>
       `;
 
-      // SIMPLE INSIGHT MESSAGE (based on moderate scenario)
-      let insightType = "";
+      // SIMPLE INSIGHT MESSAGE (based on total wealth in moderate scenario)
       let insightText = "";
 
-      if (moderateResult >= 2e7) { // ≥ 2 crore (example threshold)
-        insightType = "strong";
-        insightText = "You are building meaningful long-term wealth. Staying consistent with your SIPs and step-up plan can help you reach large goals comfortably.";
-      } else if (moderateResult >= 5e6) { // ≥ 50 lakh
-        insightType = "moderate";
+      if (moderateTotalWealth >= 2e7) { // ≥ 2 crore
+        insightText = "You are building meaningful long-term wealth. Staying consistent with your SIPs, step-up plan and disciplined asset mix can help you reach large goals comfortably.";
+      } else if (moderateTotalWealth >= 5e6) { // ≥ 50 lakh
         insightText = "You are on the right track. Even a small increase in SIP amount or a slightly longer investment horizon can significantly boost your future wealth.";
       } else {
-        insightType = "low";
         insightText = "Your current plan may lead to a relatively modest corpus. Consider increasing your SIP, adding to your lumpsum, or extending your time horizon to improve your wealth outcome.";
       }
 
@@ -360,6 +389,5 @@
     }
   </script>
 </body>
-
 
 </html>
