@@ -1,393 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Total Wealth & Purchasing Power Calculator</title>
-  <meta name="description"
-    content="A powerful wealth calculator for Indian investors combining SIP, step-up SIP, lumpsum investment and gold/silver CAGR with inflation adjustment. Calculate future wealth, real value after inflation, and compare scenarios at 12%, 13%, 15% expected returns. Ideal for mutual fund investors and long-term planners.">
+  <meta name="description" content="A powerful wealth calculator for Indian investors combining SIP, step-up SIP, lumpsum investment and gold/silver CAGR with inflation adjustment. Calculate future wealth, real value after inflation, and compare scenarios at 12%, 13%, 15% expected returns. Ideal for mutual fund investors and long-term planners.">
 
   <style>
+    /* ===== Reset & responsive basics ===== */
+    :root { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: inherit; }
+    html, body { margin:0; padding:0; width:100%; min-height:100%; -webkit-text-size-adjust:100%; }
     body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      line-height: 1.6;
-      background-color: #f5f5f5;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:#f5f6f8; color:#111; line-height:1.45;
+      padding:16px;
     }
 
-    h1 {
-      margin-bottom: 5px;
+    /* ===== Layout container ===== */
+    .calculator-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(21,30,44,0.06);
     }
 
-    h2 {
-      margin-top: 30px;
-      border-left: 4px solid #007bff;
-      padding-left: 8px;
-      font-size: 20px;
+    header { margin-bottom:12px; }
+    h1 { margin:0 0 6px; font-size:20px; }
+    .brand-line { font-weight:600; color:#374151; margin-bottom:8px; font-size:13px; }
+
+    /* ===== Inputs ===== */
+    .inputs { margin-top:8px; }
+    label { display:block; font-weight:600; font-size:13px; margin-top:10px; color:#1f2937; }
+    input[type="number"] {
+      width:100%; padding:12px 10px; margin-top:6px; border-radius:8px; border:1px solid #d1d5db; font-size:15px;
+      background:#fff;
     }
 
-    p {
-      margin: 4px 0;
-    }
+    .row { display:flex; gap:10px; }
+    .col { flex:1; }
 
-    .brand-line {
-      font-weight: bold;
-      margin-bottom: 15px;
+    button.calc-btn {
+      width:100%; padding:12px; border-radius:8px; border:0; background:#0b5fff; color:#fff; font-weight:700; font-size:16px;
+      margin-top:14px; cursor:pointer;
     }
+    button.calc-btn:active{ transform:translateY(1px); }
 
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 10px;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0 10px;
-      border-radius: 6px;
-      border: 1px solid #999;
-      font-size: 15px;
-      box-sizing: border-box;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      background-color: #007bff;
-      color: white;
-      font-size: 17px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    button:hover {
-      background-color: #005fcc;
-    }
-
-    .result-box {
-      border: 1px solid #ddd;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 15px;
-      background: #ffffff;
-    }
-
-    .result-box h2 {
-      border: none;
-      padding-left: 0;
-      margin-top: 0;
-    }
+    /* ===== Results ===== */
+    #results { margin-top:16px; }
+    .result-box { border-radius:8px; background:#ffffff; padding:14px; border:1px solid #e6eef8; }
+    .result-box h2 { margin:0 0 8px; font-size:16px; }
+    .mini { font-size:13px; color:#374151; margin:6px 0; }
 
     .scenario-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 15px;
+      display:grid; grid-template-columns:1fr; gap:12px; margin-top:12px;
     }
+    @media (min-width:780px) { .scenario-grid { grid-template-columns: repeat(3,1fr); } }
 
-    .scenario-card {
-      padding: 12px;
-      border-radius: 8px;
-      background: #ffffff;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
+    .scenario-card { background:#fff; border:1px solid #e6eef8; padding:12px; border-radius:8px; font-size:14px; }
+    .scenario-card h3 { margin:0 0 8px; font-size:15px; }
 
-    .scenario-card h3 {
-      margin-top: 0;
-      font-size: 16px;
-    }
+    .gold-block { background:#fffaf0; border-left:4px solid #e6b325; padding:12px; border-radius:8px; margin-top:12px; }
+    .highlight { background:#fff8e1; border-left:4px solid #ff9800; padding:12px; border-radius:8px; margin-top:12px; }
+    .insight { background:#e8f2ff; border-left:4px solid #2b6cff; padding:12px; border-radius:8px; margin-top:12px; font-size:14px; }
 
-    @media (min-width: 700px) {
-      .scenario-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
+    .disclaimer { margin-top:14px; font-size:12px; color:#4b5563; }
 
-    .highlight {
-      background-color: #fff8e1;
-      padding: 12px;
-      border-left: 5px solid #ff9800;
-      margin-top: 15px;
-      border-radius: 6px;
-      font-size: 14px;
-    }
+    .hr { height:1px; background:#eef2f7; margin:12px 0; border-radius:2px; }
 
-    .gold-block {
-      background: #fff3cd;
-      padding: 12px;
-      border-left: 5px solid #d4a017;
-      border-radius: 6px;
-      margin-top: 15px;
-      font-size: 14px;
-    }
+    .error { color:#b91c1c; margin-top:10px; font-size:14px; }
 
-    .insight {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 6px;
-      background: #e3f2fd;
-      border-left: 5px solid #1976d2;
-      font-size: 14px;
-    }
-
-    .disclaimer {
-      margin-top: 25px;
-      font-size: 12px;
-      color: #555;
-    }
-
-    .error {
-      margin-top: 10px;
-      color: #c62828;
-      font-size: 14px;
-    }
-
-    hr {
-      border: none;
-      border-top: 1px solid #ddd;
-      margin: 10px 0;
+    /* very small screens tweaks */
+    @media (max-width:360px) {
+      body { padding:10px; }
+      .calculator-wrapper { padding:12px; }
+      h1 { font-size:18px; }
+      input[type="number"] { padding:10px; font-size:14px; }
+      button.calc-btn { padding:10px; font-size:15px; }
     }
   </style>
 </head>
 
 <body>
-  <h1>💰 Total Wealth & Purchasing Power Calculator</h1>
-  <p>See how your SIP, lumpsum and gold/silver can grow — and what your future wealth will be worth in today’s money.</p>
-  <p class="brand-line">Nitin Ghai — Certified Mutual Fund Advisor (MutualFundVibe)</p>
+  <div class="calculator-wrapper" id="app">
+    <header>
+      <h1>💰 Total Wealth & Purchasing Power Calculator</h1>
+      <div class="brand-line">Nitin Ghai — Certified Mutual Fund Advisor (MutualFundVibe)</div>
+      <div class="mini">Estimate future value of your lumpsum, SIP (with yearly step-up) and gold/silver — and see what it’s worth in today’s money.</div>
+    </header>
 
-  <h2>Enter Your Details</h2>
+    <section class="inputs" aria-label="Calculator inputs">
+      <label for="lumpsum">Lumpsum Invested Today (₹)</label>
+      <input id="lumpsum" type="number" inputmode="numeric" placeholder="e.g. 500000">
 
-  <label for="lumpsum">Lumpsum Invested Today (₹)</label>
-  <input type="number" id="lumpsum" placeholder="e.g. 500000">
+      <label for="gold">Gold + Silver Value Today (₹)</label>
+      <input id="gold" type="number" inputmode="numeric" placeholder="e.g. 300000">
 
-  <label for="gold">Gold + Silver Value Today (₹)</label>
-  <input type="number" id="gold" placeholder="e.g. 300000">
+      <label for="sip">Monthly SIP (₹)</label>
+      <input id="sip" type="number" inputmode="numeric" placeholder="e.g. 15000">
 
-  <label for="sip">Monthly SIP (₹)</label>
-  <input type="number" id="sip" placeholder="e.g. 15000">
+      <div class="row">
+        <div class="col">
+          <label for="stepup">Annual SIP Increase (%)</label>
+          <input id="stepup" type="number" inputmode="numeric" placeholder="e.g. 10">
+        </div>
+        <div class="col">
+          <label for="years">Time Horizon (Years)</label>
+          <input id="years" type="number" inputmode="numeric" placeholder="e.g. 20">
+        </div>
+      </div>
 
-  <label for="stepup">Annual SIP Increase (%)</label>
-  <input type="number" id="stepup" placeholder="e.g. 10">
+      <button class="calc-btn" onclick="calculateWealth()" aria-label="Calculate my future wealth">Calculate My Future Wealth</button>
+      <div id="error" class="error" role="alert" aria-live="polite"></div>
+    </section>
 
-  <label for="years">Time Horizon (Years)</label>
-  <input type="number" id="years" placeholder="e.g. 20">
+    <section id="results" aria-live="polite"></section>
 
-  <button onclick="calculateWealth()">Calculate My Future Wealth</button>
-
-  <div id="error" class="error"></div>
-  <div id="results"></div>
-
-  <div class="disclaimer">
-    <strong>Note on assumptions:</strong> Equity returns are shown at 12% (Conservative), 13% (Moderate) and
-    15% (Optimistic) for illustration only. Gold & silver are assumed at 8% CAGR based on broad long-term (around
-    20-year) average trends from sources such as World Gold Council historical price data. Inflation is assumed at 7% per
-    year to estimate purchasing power in today’s money. These are not guarantees.
-    <br><br>
-    <strong>Disclaimer:</strong> This calculator is for awareness and education only. It does not recommend any specific
-    product or predict actual future returns. Markets and prices can be volatile. Please consult a financial advisor for
-    personalised advice.
+    <div class="disclaimer" style="margin-top:16px;">
+      <strong>Note on assumptions:</strong> Equity returns are illustrative at 12% (Conservative), 13% (Moderate) and 15% (Optimistic).
+      Gold & silver are assumed at 8% CAGR (approx long-term ~20-year average). Inflation assumed at 7%/yr for purchasing-power estimates.
+      These are assumptions, not guarantees.
+    </div>
   </div>
 
   <script>
-    // Future value of a lumpsum with annual compounding (equity portion)
+    /* ===== Utility & calculation functions ===== */
+
+    // Convert number to Indian short words
+    function toIndianShort(num) {
+      if (!isFinite(num)) return "-";
+      if (Math.abs(num) >= 1e7) return (num / 1e7).toFixed(2) + " crore";
+      if (Math.abs(num) >= 1e5) return (num / 1e5).toFixed(2) + " lakh";
+      if (Math.abs(num) >= 1e3) return (num / 1e3).toFixed(2) + " thousand";
+      return Math.round(num).toString();
+    }
+
+    // Future value of lumpsum with annual compounding
     function fvLumpsum(P, annualRate, years) {
+      if (!P || years <= 0) return 0;
       return P * Math.pow(1 + annualRate, years);
     }
 
-    // Future value of SIP with annual step-up and monthly compounding (equity portion)
+    // Future value of SIP with annual step-up (SIP increases once each year),
+    // monthly contributions and monthly compounding derived from annualRate
     function fvSIP(monthly, stepUpRate, years, annualRate) {
-      let months = years * 12;
-      if (months <= 0) return 0;
-      let monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
+      if (!monthly || years <= 0) return 0;
+      const months = years * 12;
+      const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
       let fv = 0;
       let currentSip = monthly;
-
       for (let m = 1; m <= months; m++) {
         fv = fv * (1 + monthlyRate) + currentSip;
-        if (m % 12 === 0) {
-          currentSip *= (1 + stepUpRate);
-        }
+        if (m % 12 === 0) { currentSip *= (1 + stepUpRate); }
       }
       return fv;
     }
 
-    // Convert number to Indian style short words (thousand / lakh / crore)
-    function toIndianShort(num) {
-      if (num >= 1e7) {
-        return (num / 1e7).toFixed(2) + " crore";
-      } else if (num >= 1e5) {
-        return (num / 1e5).toFixed(2) + " lakh";
-      } else if (num >= 1e3) {
-        return (num / 1e3).toFixed(2) + " thousand";
-      } else {
-        return num.toFixed(0);
-      }
+    // Format number with Indian grouping for display
+    function formatINR(num) {
+      if (!isFinite(num)) return "-";
+      return "₹ " + Number(num).toLocaleString('en-IN', { maximumFractionDigits: 0 });
     }
 
+    // Constants (configurable)
+    const GOLD_RATE = 0.08;     // 8% CAGR for gold/silver (assumption)
+    const INFLATION = 0.07;     // 7% annual inflation
+    const SCENARIOS = [
+      { rate: 0.12, label: "Conservative", tag: "Steady Market" },
+      { rate: 0.13, label: "Moderate", tag: "Typical Market" },
+      { rate: 0.15, label: "Optimistic", tag: "Strong Market (Best Case)" }
+    ];
+
+    /* ===== Main UI logic ===== */
     function calculateWealth() {
       const errorDiv = document.getElementById("error");
       const resultsDiv = document.getElementById("results");
       errorDiv.textContent = "";
       resultsDiv.innerHTML = "";
 
-      let L = Number(document.getElementById("lumpsum").value) || 0;
-      let G = Number(document.getElementById("gold").value) || 0;
-      let S = Number(document.getElementById("sip").value) || 0;
-      let stepUpPercent = Number(document.getElementById("stepup").value) || 0;
-      let T = Number(document.getElementById("years").value) || 0;
+      // Read inputs
+      const L = Number(document.getElementById("lumpsum").value) || 0;
+      const G = Number(document.getElementById("gold").value) || 0;
+      const S = Number(document.getElementById("sip").value) || 0;
+      const stepUpPercent = Number(document.getElementById("stepup").value) || 0;
+      const years = Number(document.getElementById("years").value) || 0;
 
-      if (T <= 0) {
-        errorDiv.textContent = "Please enter a valid time horizon in years (greater than 0).";
-        return;
-      }
-
-      if (L < 0 || G < 0 || S < 0) {
-        errorDiv.textContent = "Please enter non-negative values only.";
-        return;
-      }
+      if (years <= 0) { errorDiv.textContent = "Please enter a valid time horizon (years)."; postHeightToParent(); return; }
+      if (L < 0 || G < 0 || S < 0 || stepUpPercent < 0) { errorDiv.textContent = "Please enter non-negative values."; postHeightToParent(); return; }
 
       const stepUp = stepUpPercent / 100;
-      const goldRate = 0.08;   // 8% CAGR assumption for gold & silver
-      const inflation = 0.07;  // 7% inflation
+      const fvGold = G * Math.pow(1 + GOLD_RATE, years);
+      const inflationFactor = Math.pow(1 + INFLATION, years);
 
-      // Future value of gold & silver (same for all scenarios)
-      let fvGold = G * Math.pow(1 + goldRate, T);
-      let inflationFactor = Math.pow(1 + inflation, T);
-
-      // Equity return scenarios
-      let scenarios = [
-        { rate: 0.12, name: "Conservative", tag: "Steady Market" },
-        { rate: 0.13, name: "Moderate", tag: "Typical Market" },
-        { rate: 0.15, name: "Optimistic", tag: "Strong Market (Best Case)" }
-      ];
-
-      let moderateEquityTotal = 0;
-      let moderateTotalWealth = 0;
-
-      // Calculate total wealth for each scenario
-      scenarios.forEach(s => {
-        let fvL = fvLumpsum(L, s.rate, T);
-        let fvS = fvSIP(S, stepUp, T, s.rate);
-        let equityTotal = fvL + fvS;
-        let totalWealth = equityTotal + fvGold;
-
-        s.fvLumpsum = fvL;
-        s.fvSip = fvS;
-        s.equityTotal = equityTotal;
-        s.totalWealth = totalWealth;
-
-        if (s.rate === 0.13) {
-          moderateEquityTotal = equityTotal;
-          moderateTotalWealth = totalWealth;
-        }
+      // calculate scenarios
+      let moderateEquity = 0;
+      let moderateTotal = 0;
+      const scenarioResults = SCENARIOS.map(s => {
+        const fvL = fvLumpsum(L, s.rate, years);
+        const fvS = fvSIP(S, stepUp, years, s.rate);
+        const equityTotal = fvL + fvS;
+        const totalWealth = equityTotal + fvGold;
+        if (s.rate === 0.13) { moderateEquity = equityTotal; moderateTotal = totalWealth; }
+        return {
+          rate: s.rate,
+          label: s.label,
+          tag: s.tag,
+          fvLumpsum: fvL,
+          fvSip: fvS,
+          equityTotal: equityTotal,
+          totalWealth: totalWealth
+        };
       });
 
-      // MAIN 13% BLOCK with clear breakup
-      let mainHTML = `
-        <h2>🔮 Your Future Wealth Breakdown (Moderate Scenario – 13%)</h2>
-        <div class="result-box">
-          <h3>1️⃣ Equity Wealth (Lumpsum + SIP @ 13%)</h3>
-          <p><strong>Future Equity Value:</strong> ₹ ${moderateEquityTotal.toLocaleString()}</p>
-          <p>Approx: <strong>${toIndianShort(moderateEquityTotal)}</strong></p>
-          <hr>
-          <h3>2️⃣ Gold & Silver Wealth (@ 8% CAGR)</h3>
-          <p><strong>Future Gold & Silver Value:</strong> ₹ ${fvGold.toLocaleString()}</p>
-          <p>Approx: <strong>${toIndianShort(fvGold)}</strong></p>
-          <hr>
-          <h3>3️⃣ Total Future Wealth (Equity + Gold/Silver)</h3>
-          <p><strong>Total Future Value:</strong> ₹ ${moderateTotalWealth.toLocaleString()}</p>
-          <p>Approx: <strong>${toIndianShort(moderateTotalWealth)}</strong></p>
-          <p style="margin-top:8px; font-size: 0.9em;">
-            Equity portion (lumpsum + SIP) is grown at <strong>13% per year</strong>, while the gold & silver portion is grown at
-            <strong>8% CAGR</strong>. The total is a combination of both.
-          </p>
-        </div>
-      `;
+      // Build result HTML (clear breakup)
+      let html = '';
 
-      // SCENARIO GRID – explicitly mentioning equity + gold logic
-      let scenarioHTML = `<h2>📊 Scenario Comparison</h2><div class="scenario-grid">`;
+      html += `<div class="result-box" aria-label="Moderate scenario results">`;
+      html += `<h2>🔮 Your Future Wealth Breakdown (Moderate Scenario – 13%)</h2>`;
 
-      scenarios.forEach(s => {
-        scenarioHTML += `
-          <div class="scenario-card">
-            <h3>${s.name} — ${(s.rate * 100).toFixed(0)}%</h3>
-            <p><strong>Future Equity (Lumpsum + SIP @ ${(s.rate * 100).toFixed(0)}%):</strong><br>
-              ₹ ${s.equityTotal.toLocaleString()}<br>
-              <span style="font-size: 0.9em;">Approx: ${toIndianShort(s.equityTotal)}</span>
-            </p>
-            <p><strong>Future Gold & Silver (@ 8% CAGR):</strong><br>
-              ₹ ${fvGold.toLocaleString()}<br>
-              <span style="font-size: 0.9em;">Approx: ${toIndianShort(fvGold)}</span>
-            </p>
-            <hr>
-            <p><strong>Total Future Wealth:</strong><br>
-              ₹ ${s.totalWealth.toLocaleString()}<br>
-              <span style="font-size: 0.9em;">Approx: ${toIndianShort(s.totalWealth)}</span>
-            </p>
-            <p><em>${s.tag}</em></p>
-          </div>
-        `;
+      // Equity block
+      html += `<div style="margin-top:8px;"><h3 style="margin:0 0 6px;">1️⃣ Equity (Lumpsum + SIP) — @ 13%</h3>`;
+      html += `<div class="mini"><strong>Future Equity Value:</strong> ${formatINR(moderateEquity)}<br>`;
+      html += `<strong>Approx:</strong> <strong>${toIndianShort(moderateEquity)}</strong></div></div>`;
+
+      html += `<div class="hr"></div>`;
+
+      // Gold block
+      html += `<div style="margin-top:6px;"><h3 style="margin:0 0 6px;">2️⃣ Gold & Silver — @ ${Math.round(GOLD_RATE*100)}% CAGR</h3>`;
+      html += `<div class="mini"><strong>Future Gold & Silver Value:</strong> ${formatINR(fvGold)}<br>`;
+      html += `<strong>Approx:</strong> <strong>${toIndianShort(fvGold)}</strong></div></div>`;
+
+      html += `<div class="hr"></div>`;
+
+      // Total block
+      html += `<div style="margin-top:6px;"><h3 style="margin:0 0 6px;">3️⃣ Total Future Wealth (Equity + Gold/Silver)</h3>`;
+      html += `<div class="mini"><strong>Total Future Value:</strong> ${formatINR(moderateTotal)}<br>`;
+      html += `<strong>Approx:</strong> <strong>${toIndianShort(moderateTotal)}</strong></div>`;
+      html += `<div style="margin-top:8px; font-size:13px; color:#374151;">Note: Equity portion uses the selected scenario rate (here 13%), while Gold & Silver use an assumed ${Math.round(GOLD_RATE*100)}% CAGR. The total is the sum of both.</div>`;
+      html += `</div>`;
+
+      html += `</div>`; // end result-box
+
+      // Scenario comparison cards
+      html += `<h2 style="margin-top:14px;">📊 Scenario Comparison</h2>`;
+      html += `<div class="scenario-grid">`;
+      scenarioResults.forEach(s => {
+        html += `<div class="scenario-card" aria-label="${s.label} scenario">`;
+        html += `<h3>${s.label} — ${(s.rate*100).toFixed(0)}%</h3>`;
+        html += `<div class="mini"><strong>Future Equity (Lumpsum + SIP @ ${(s.rate*100).toFixed(0)}%):</strong><br>${formatINR(s.equityTotal)}<br><strong>Approx:</strong> ${toIndianShort(s.equityTotal)}</div>`;
+        html += `<div style="height:8px"></div>`;
+        html += `<div class="mini"><strong>Future Gold & Silver (@ ${Math.round(GOLD_RATE*100)}%):</strong><br>${formatINR(fvGold)}<br><strong>Approx:</strong> ${toIndianShort(fvGold)}</div>`;
+        html += `<div class="hr"></div>`;
+        html += `<div class="mini"><strong>Total Future Wealth:</strong><br>${formatINR(s.totalWealth)}<br><strong>Approx:</strong> ${toIndianShort(s.totalWealth)}</div>`;
+        html += `<div style="margin-top:8px;"><em style="color:#475569;">${s.tag}</em></div>`;
+        html += `</div>`;
       });
+      html += `</div>`;
 
-      scenarioHTML += `</div>`;
+      // Gold explanation block
+      html += `<div class="gold-block" style="margin-top:12px;">`;
+      html += `<h3 style="margin:0 0 6px;">🪙 Why Gold & Silver @ ${Math.round(GOLD_RATE*100)}%?</h3>`;
+      html += `<div class="mini">We use <strong>${Math.round(GOLD_RATE*100)}% CAGR</strong> as an illustrative long-term average for gold & silver (approx 20-year historical average trends). Sources include historical commodity price datasets and industry summaries such as the <em>World Gold Council</em>. This is an assumption for projection, not a guaranteed return.</div>`;
+      html += `</div>`;
 
-      // GOLD & SILVER BLOCK (separate explanation)
-      let goldHTML = `
-        <div class="gold-block">
-          <h3>🪙 Your Gold & Silver Wealth (Assumed @ 8% CAGR)</h3>
-          <p>Your gold + silver worth <strong>₹ ${G.toLocaleString()}</strong> today
-          may grow to around <strong>₹ ${fvGold.toLocaleString()}</strong> 
-          (approx <strong>${toIndianShort(fvGold)}</strong>) over ${T} years.</p>
-          <p style="font-size: 0.9em; margin-top: 6px;">
-            We have assumed a <strong>8% CAGR</strong> for gold & silver. This is based on broad 
-            long-term (~20 year) average return trends from historical price data, including references 
-            such as <em>World Gold Council</em> and commodity price history. This is only an assumption, 
-            not a prediction or guarantee.
-          </p>
-        </div>
-      `;
+      // Inflation-adjusted block (for moderate scenario total)
+      const realValue = moderateTotal / inflationFactor;
+      html += `<div class="highlight">`;
+      html += `<h3 style="margin:0 0 6px;">⚠️ Inflation-Adjusted Purchasing Power</h3>`;
+      html += `<div class="mini">Your total future wealth of <strong>${formatINR(moderateTotal)}</strong> (approx <strong>${toIndianShort(moderateTotal)}</strong>) will feel like <strong>${formatINR(realValue)}</strong> in today's money (approx <strong>${toIndianShort(realValue)}</strong>), assuming <strong>${Math.round(INFLATION*100)}% annual inflation</strong>.</div>`;
+      html += `</div>`;
 
-      // INFLATION-ADJUSTED BLOCK (total wealth in 13% scenario)
-      let realValue = moderateTotalWealth / inflationFactor;
-      let inflationHTML = `
-        <div class="highlight">
-          <h3>⚠️ Inflation-Adjusted Purchasing Power</h3>
-          <p>Your total future wealth of <strong>₹ ${moderateTotalWealth.toLocaleString()}</strong> 
-          (approx <strong>${toIndianShort(moderateTotalWealth)}</strong>) 
-          will feel like about <strong>₹ ${realValue.toLocaleString()}</strong> 
-          in today’s money (approx <strong>${toIndianShort(realValue)}</strong>), 
-          assuming <strong>7% annual inflation</strong>.</p>
-        </div>
-      `;
-
-      // SIMPLE INSIGHT MESSAGE (based on total wealth in moderate scenario)
+      // Planner insight
       let insightText = "";
+      if (moderateTotal >= 2e7) insightText = "You are building meaningful long-term wealth. Staying consistent can help you reach large goals comfortably.";
+      else if (moderateTotal >= 5e6) insightText = "You are on the right track. A small increase in SIP or small extension to the horizon can make a notable difference.";
+      else insightText = "Consider increasing SIP, adding to lumpsum, or extending horizon to improve future corpus.";
 
-      if (moderateTotalWealth >= 2e7) { // ≥ 2 crore
-        insightText = "You are building meaningful long-term wealth. Staying consistent with your SIPs, step-up plan and disciplined asset mix can help you reach large goals comfortably.";
-      } else if (moderateTotalWealth >= 5e6) { // ≥ 50 lakh
-        insightText = "You are on the right track. Even a small increase in SIP amount or a slightly longer investment horizon can significantly boost your future wealth.";
-      } else {
-        insightText = "Your current plan may lead to a relatively modest corpus. Consider increasing your SIP, adding to your lumpsum, or extending your time horizon to improve your wealth outcome.";
-      }
+      html += `<div class="insight"><strong>💡 Planner's Insight</strong><div style="margin-top:6px;">${insightText}</div></div>`;
 
-      let insightHTML = `
-        <div class="insight">
-          <h3>💡 Planner's Insight</h3>
-          <p>${insightText}</p>
-        </div>
-      `;
+      resultsDiv.innerHTML = html;
 
-      resultsDiv.innerHTML = mainHTML + scenarioHTML + goldHTML + inflationHTML + insightHTML;
+      // Notify parent embed about new height (attempt)
+      postHeightToParent();
     }
+
+    /* ===== postMessage helper ===== */
+    function postHeightToParent() {
+      try {
+        const height = document.documentElement.scrollHeight || document.body.scrollHeight;
+        parent.postMessage({ type: 'embed-size', height: height }, '*');
+      } catch (e) { /* ignore cross-origin errors */ }
+    }
+
+    // send height on load/resize/async events
+    window.addEventListener('load', postHeightToParent);
+    window.addEventListener('resize', postHeightToParent);
+    setTimeout(postHeightToParent, 600);
+    setInterval(postHeightToParent, 2000);
   </script>
 </body>
-
 </html>
