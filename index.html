@@ -173,6 +173,23 @@
       { rate: 0.15, label: "Optimistic", tag: "Strong Market (Best Case)" }
     ];
 
+    // MFV engagement: emit once per valid, successfully displayed calculation.
+    // The original result and embed resizing behavior remains unchanged.
+    function reportWealthCompletion(L, G, S, stepUpPercent, years, scenarioResults, fvGold, inflationFactor, realValue) {
+      try {
+        if (![L, G, S, stepUpPercent, years].every(Number.isFinite) ||
+            L < 0 || G < 0 || S < 0 || stepUpPercent < 0 || years <= 0 ||
+            !(L > 0 || G > 0 || S > 0) ||
+            ![fvGold, inflationFactor, realValue].every(Number.isFinite) || inflationFactor <= 0 ||
+            !Array.isArray(scenarioResults) || scenarioResults.length !== SCENARIOS.length ||
+            !scenarioResults.every(s => [s.fvLumpsum, s.fvSip, s.equityTotal, s.totalWealth].every(v => Number.isFinite(v) && v >= 0)) ||
+            window.parent === window) return;
+        const eventId = window.crypto.randomUUID();
+        window.parent.postMessage({type:'mfv:calculator_completed', calculator_id:'total_wealth', event_id:eventId},
+          'https://www.mutualfundvibe.in');
+      } catch (_) { /* Analytics must never interrupt calculator results. */ }
+    }
+
     /* ===== Main UI logic ===== */
     function calculateWealth() {
       const errorDiv = document.getElementById("error");
@@ -281,6 +298,7 @@
       html += `<div class="insight"><strong>💡 Planner's Insight</strong><div style="margin-top:6px;">${insightText}</div></div>`;
 
       resultsDiv.innerHTML = html;
+      reportWealthCompletion(L, G, S, stepUpPercent, years, scenarioResults, fvGold, inflationFactor, realValue);
 
       // Notify parent embed about new height (attempt)
       postHeightToParent();
